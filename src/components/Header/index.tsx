@@ -10,6 +10,8 @@ interface IProps {
 export function Header({ onAddTask }: IProps) {
   const [title, setTitle] = useState('');
 
+  const isEmpty = title.length === 0;
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     onAddTask(title);
@@ -30,7 +32,7 @@ export function Header({ onAddTask }: IProps) {
           onChange={onChangeTitle}
           value={title}
         />
-        <button>
+        <button type="submit" disabled={isEmpty}>
           Create
           <AiOutlinePlusCircle size={20} />
         </button>
