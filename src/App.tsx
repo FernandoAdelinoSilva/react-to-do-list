@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { Tasks } from './components/Tasks';
+
+const LOCAL_STORAGE_KEY = 'store:tasks';
 
 export interface ITask {
   id: string;
@@ -11,8 +13,18 @@ export interface ITask {
 function App() {
   const [tasks, setTasks] = useState<ITask[]>([]);
 
+  function loadTasks() {
+    const localTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (localTasks) setTasks(JSON.parse(localTasks));
+  }
+
+  function saveTasks(newTasks: ITask[]) {
+    setTasks(newTasks);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newTasks));
+  }
+
   function addTask(taskTitle: string) {
-    setTasks([
+    saveTasks([
       ...tasks,
       {
         id: crypto.randomUUID(),
@@ -24,13 +36,36 @@ function App() {
 
   function deleteTaskById(taskId: string) {
     const newTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(newTasks);
+    saveTasks(newTasks);
   }
+
+  function toggleTaskCompletedById(taskId: string) {
+    const newTasks = tasks.map((task) => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          isCompleted: !task.isCompleted,
+        };
+      }
+
+      return task;
+    });
+
+    saveTasks(newTasks);
+  }
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
 
   return (
     <>
       <Header onAddTask={addTask} />
-      <Tasks tasks={tasks} onDelete={deleteTaskById} />
+      <Tasks
+        tasks={tasks}
+        onDelete={deleteTaskById}
+        onComplete={toggleTaskCompletedById}
+      />
     </>
   );
 }
